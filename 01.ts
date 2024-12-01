@@ -2,12 +2,11 @@ import { loadFromFile, sum } from "./lib.ts";
 
 async function main() {
   const lines = await loadFromFile("./01-input.txt");
-  const numberLists = parseNumberLists(lines);
-  console.log(`Part 1: ${partOne(numberLists)}`);
+  const [first, second] = parseNumberLists(lines);
+  console.log(`Part 1: ${partOne(first, second)}`);
 }
 
-function partOne(numberLists: number[][]) {
-  const [first, second] = numberLists;
+function partOne(first: number[], second: number[]) {
   const sortedFirst = first.sort((a, b) => a - b);
   const sortedSecond = second.sort((a, b) => a - b);
   const differences = sortedFirst.map((n, i) => Math.abs(n - sortedSecond[i]));
