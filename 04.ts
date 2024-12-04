@@ -1,4 +1,4 @@
-import { loadFromFile, sum } from "./lib.ts";
+import { loadFromFile } from "./lib.ts";
 import { getGridLines, Grid } from "./lib/Coord.ts";
 
 async function main() {
