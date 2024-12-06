@@ -5,6 +5,13 @@ export type Coord = {
 
 export type Grid<A> = A[][];
 
+export enum Direction {
+  Up,
+  Down,
+  Left,
+  Right,
+}
+
 export function allDirections(includeDiagonals: boolean = false): Coord[] {
   const modifications = [
     { x: 1, y: 0 },
@@ -77,4 +84,18 @@ export function getGridLines<A>(
   return allDirections(includeDiagonals).map((direction) =>
     getGridLine(grid, direction, start, condition)
   );
+}
+
+export function rotateClockwise(direction: Direction): Direction {
+  return direction === Direction.Up ? Direction.Right : 
+         direction === Direction.Right ? Direction.Down :
+         direction === Direction.Down ? Direction.Left :
+         Direction.Up;
+}
+
+export function directionToModifier(direction: Direction): Coord {
+  return direction === Direction.Up ? { x: 0, y: -1 } :
+         direction === Direction.Right ? { x: 1, y: 0 } :
+         direction === Direction.Down ? { x: 0, y: 1 } :
+         { x: -1, y: 0 };
 }
