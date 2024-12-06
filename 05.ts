@@ -5,21 +5,32 @@ async function main() {
   const text = await fs.readFile("./05-input.txt", { encoding: "utf-8" });
   const [ruleLines, orderingLines] = text.split("\n\n");
   const rules = parseRules(ruleLines.split("\n"));
-  const orderings = parseOrderings(orderingLines.split("\n"));
-  console.log(`Part 1: ${partOne(rules, orderings)}`);
-}
-
-function partOne(rules: number[][], orderings: number[][]): number {
   const indexedRules = rules.reduce((acc, [key, value]) => {
-    acc[key] = [...acc[key] || [], value];
+    acc[key] = [...(acc[key] || []), value];
     return acc;
   }, {} as Record<number, number[]>);
+  const orderings = parseOrderings(orderingLines.split("\n"));
+  console.log(`Part 1: ${partOne(indexedRules, orderings)}`);
+  console.log(`Part 2: ${partTwo(indexedRules, orderings)}`);
+}
 
+function partOne(indexedRules: Record<number, number[]>, orderings: number[][]): number {
   const validOrderings = getValidOrderings(indexedRules, orderings);
-  const middleNumbers = validOrderings.map((ordering) => {
-    return ordering[Math.floor(ordering.length / 2)];
-  });
+  const middleNumbers = validOrderings.map((ordering) =>
+    ordering[Math.floor(ordering.length / 2)]
+  );
+  return sum(middleNumbers);
+}
 
+function partTwo(indexedRules: Record<number, number[]>, orderings: number[][]): number {
+  const validOrderings = getValidOrderings(indexedRules, orderings);
+  const invalidOrderings = orderings.filter((ordering) => !validOrderings.includes(ordering));
+  const fixedOrderings = invalidOrderings.map((ordering) => 
+    ordering.sort((a, b) => indexedRules[a] && indexedRules[a].includes(b) ? -1 : 1)
+);
+  const middleNumbers = fixedOrderings.map((ordering) => 
+    ordering[Math.floor(ordering.length / 2)]
+);
   return sum(middleNumbers);
 }
 
