@@ -26,7 +26,7 @@ export function sum(xs: number[]): number {
 }
 
 export function product(xs: number[]): number {
-  return xs.reduce((a, b) => a * b);
+  return xs.reduce((a, b) => a * b, 1);
 }
 
 export function same<A>(xs: A[]): boolean {
