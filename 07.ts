@@ -4,28 +4,42 @@ async function main() {
   const lines = await loadFromFile("./07-input.txt");
   const equations = parseEquations(lines);
   console.log(`Part 1: ${partOne(equations)}`);
+  console.log(`Part 2: ${partTwo(equations)}`);
 }
 
 function partOne(equations: Map<number, number[]>) {
+  return go(equations, [add, mul]);
+}
+
+function partTwo(equations: Map<number, number[]>) {
+  return go(equations, [add, mul, concat]);
+}
+
+function go(equations: Map<number, number[]>, allowedOperations: ((a: number, b: number) => number)[]) {
   let total = 0;
   equations.forEach((operands, target) => {
-    if (possibleValues(operands).includes(target)) {
+    if (possibleValues(operands, allowedOperations).includes(target)) {
       total += target;
     }
   });
   return total;
 }
 
-const possibleValues = (operands: number[]): number[] => {
+const add = (a: number, b: number) => a + b;
+const mul = (a: number, b: number) => a * b;
+const concat = (a: number, b: number) => parseInt(`${a}${b}`, 10);
+
+const possibleValues = (
+  operands: number[],
+  allowedOperations: ((a: number, b: number) => number)[]
+): number[] => {
   if (operands.length === 1) {
     return [operands[0]];
   }
 
-  const add = (a: number, b: number) => a + b;
-  const mul = (a: number, b: number) => a * b;
-  return [add, mul].map((op) =>
-    possibleValues(operands.slice(0, operands.length - 1)).map((b) =>
-      op(operands[operands.length - 1], b)
+  return allowedOperations.map((op) =>
+    possibleValues(operands.slice(0, operands.length - 1), allowedOperations).map((b) =>
+      op(b, operands[operands.length - 1])
     )
   ).flat();
 };
