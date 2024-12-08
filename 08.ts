@@ -33,7 +33,7 @@ function markAntennaAntinodes(grid: Grid<Tile>, antennas: Record<string, Coord[]
   let antinodeCount = 0;
   for (const [_id, coords] of Object.entries(antennas)) {
     for (const coord of coords) {
-      grid[coord.y][coord.x]._type === "Antenna" && grid[coord.y][coord.x].antinodes++;
+      grid[coord.y][coord.x]._type === "Antenna" && (grid[coord.y][coord.x].antinode = true);
       antinodeCount++;
     }
   }
@@ -64,9 +64,9 @@ function markAntinodes(
           antinodeCount++;
         } else if (grid[y][x]._type === "Antenna" &&
           !resonant &&
-          grid[y][x].antinodes === 0
+          !grid[y][x].antinode
         ) {
-          grid[y][x].antinodes++;
+          grid[y][x].antinode = true;
           antinodeCount++;
         }
 
@@ -99,12 +99,12 @@ function parseGrid(lines: string[]): {
 }
 
 function parseTile(c: string): Tile {
-  return (c === ".") ? { _type: "Empty" } : { _type: "Antenna", id: c, antinodes: 0 };
+  return (c === ".") ? { _type: "Empty" } : { _type: "Antenna", id: c, antinode: false };
 }
 
 type Tile =
   | { _type: "Empty" }
-  | { _type: "Antenna", id: string, antinodes: number }
+  | { _type: "Antenna", id: string, antinode: boolean }
   | { _type: "Antinode"};
 
 main();
