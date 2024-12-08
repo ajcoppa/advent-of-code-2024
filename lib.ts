@@ -78,3 +78,13 @@ export function lcmAll(xs: number[]): number {
 export function uniquePairs<A>(xs: A[]): A[][] {
   return xs.flatMap((x1, i) => xs.slice(i + 1).map((x2) => [x1, x2]));
 }
+
+export function combinations<T>(xs: T[], n: number): T[][] {
+  if (n === 0) return [[]];
+  if (xs.length < n) return [];
+  const [head, ...tail] = xs;
+  return [
+    ...combinations(tail, n),
+    ...combinations(tail, n - 1).map((combo) => [head, ...combo]),
+  ];
+}
