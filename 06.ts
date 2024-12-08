@@ -1,4 +1,4 @@
-import { loadFromFile, sum } from "./lib.ts";
+import { deepCopy, loadFromFile, sum } from "./lib.ts";
 import {
   Coord,
   Direction,
@@ -116,10 +116,6 @@ function charToTile(c: string): Tile {
   else {
     throw new Error(`Unknown tile: ${c}`);
   }
-}
-
-function deepCopy<T>(xs: T[]): T[] {
-  return JSON.parse(JSON.stringify(xs));
 }
 
 function parseGrid(lines: string[]): Grid<Tile> {

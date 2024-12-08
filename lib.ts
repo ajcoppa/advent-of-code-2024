@@ -88,3 +88,7 @@ export function combinations<T>(xs: T[], n: number): T[][] {
     ...combinations(tail, n - 1).map((combo) => [head, ...combo]),
   ];
 }
+
+export function deepCopy<T>(xs: T[]): T[] {
+  return JSON.parse(JSON.stringify(xs));
+}
