@@ -33,7 +33,8 @@ function markAntennaAntinodes(grid: Grid<Tile>, antennas: Record<string, Coord[]
   let antinodeCount = 0;
   for (const [_id, coords] of Object.entries(antennas)) {
     for (const coord of coords) {
-      grid[coord.y][coord.x]._type === "Antenna" && (grid[coord.y][coord.x].antinode = true);
+      const tile = grid[coord.y][coord.x];
+      if (tile._type === "Antenna") tile.antinode = true;
       antinodeCount++;
     }
   }
@@ -59,14 +60,15 @@ function markAntinodes(
         if (!inBounds(x, y, grid[0].length, grid.length))
           break;
 
-        if (grid[y][x]._type === "Empty") {
+        const tile = grid[y][x];
+        if (tile._type === "Empty") {
           grid[y][x] = { _type: "Antinode" };
           antinodeCount++;
-        } else if (grid[y][x]._type === "Antenna" &&
+        } else if (tile._type === "Antenna" &&
           !resonant &&
-          !grid[y][x].antinode
+          !tile.antinode
         ) {
-          grid[y][x].antinode = true;
+          tile.antinode = true;
           antinodeCount++;
         }
 
@@ -102,9 +104,15 @@ function parseTile(c: string): Tile {
   return (c === ".") ? { _type: "Empty" } : { _type: "Antenna", id: c, antinode: false };
 }
 
-type Tile =
-  | { _type: "Empty" }
-  | { _type: "Antenna", id: string, antinode: boolean }
-  | { _type: "Antinode"};
+// type Tile =
+//   | { _type: "Empty" }
+//   | { _type: "Antenna", id: string, antinode: boolean }
+//   | { _type: "Antinode"};
+
+interface Empty { _type: "Empty"; }
+interface Antenna { _type: "Antenna"; id: string; antinode: boolean; }
+interface Antinode { _type: "Antinode"; }
+
+type Tile = Antenna | Antinode | Empty;
 
 main();
