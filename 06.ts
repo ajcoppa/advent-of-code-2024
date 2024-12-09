@@ -87,8 +87,9 @@ function tick(grid: Grid<Tile>, visited: Grid<Visited>): SimulationResult {
     return SimulationResult.GuardLeftGrid;
   }
 
-  if (visited[newGuardCoord.y][newGuardCoord.x]._type === "Visited" &&
-    visited[newGuardCoord.y][newGuardCoord.x].going.includes(facing)) {
+  const visitedTile = visited[newGuardCoord.y][newGuardCoord.x];
+  if (visitedTile._type === "Visited" &&
+    visitedTile.going.includes(facing)) {
     grid[guardY][guardX] = { _type: "Empty" };
     grid[newGuardCoord.y][newGuardCoord.x] = {
       _type: "Guard",
