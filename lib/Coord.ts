@@ -1,3 +1,5 @@
+import { any } from "../lib.ts";
+
 export type Coord = {
   x: number;
   y: number;
@@ -98,4 +100,77 @@ export function directionToModifier(direction: Direction): Coord {
          direction === Direction.Right ? { x: 1, y: 0 } :
          direction === Direction.Down ? { x: 0, y: 1 } :
          { x: -1, y: 0 };
+}
+
+export function isAdjacent(coord1: Coord, coord2: Coord): boolean {
+  return Math.abs(coord1.x - coord2.x) + Math.abs(coord1.y - coord2.y) === 1;
+}
+
+export type ContiguousRegions<T> = Map<T, Coord[][]>;
+
+export function contiguousRegions<T>(grid: Grid<T>): ContiguousRegions<T> {
+  const regions: Map<T, Coord[][]> = new Map();
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[y].length; x++) {
+      const item = grid[y][x];
+      const existingRegions = regions.get(item) || [];
+
+      if (!existingRegions) {
+        regions.set(item, [[{ x, y }]]);
+        continue;
+      }
+
+      let regionsToAdd = [...existingRegions];
+      const contiguousRegionIndex = regionsToAdd.findIndex((region) =>
+        region.some((coord) => isAdjacent(coord, { x, y }))
+      );
+
+      if (contiguousRegionIndex === -1) {
+        regionsToAdd.push([{ x, y }]);
+      } else {
+        const firstContiguousRegion = regionsToAdd[contiguousRegionIndex];
+        const regionsWithoutFirstContiguousOne = regionsToAdd.slice(0, contiguousRegionIndex)
+          .concat(regionsToAdd.slice(contiguousRegionIndex + 1));
+        const secondContiguousRegionIndex =
+          regionsWithoutFirstContiguousOne.findIndex((region) =>
+            region.some((coord) => isAdjacent(coord, { x, y }))
+          );
+        if (secondContiguousRegionIndex === -1) {
+          regionsToAdd[contiguousRegionIndex].push({ x, y });
+        } else {
+          // Multiple contiguous regions => merge them together
+          const secondContiguousRegion = regionsWithoutFirstContiguousOne[secondContiguousRegionIndex];
+          secondContiguousRegion.push({ x, y });
+          const combinedRegion = firstContiguousRegion.concat(secondContiguousRegion);
+          const existingRegionsWithoutCombined = regionsWithoutFirstContiguousOne.slice(0, secondContiguousRegionIndex)
+            .concat(regionsWithoutFirstContiguousOne.slice(secondContiguousRegionIndex + 1));
+          const fullRegions = [...existingRegionsWithoutCombined, combinedRegion];
+          regionsToAdd = [...fullRegions];
+        }
+      }
+      regions.set(item, regionsToAdd);
+    }
+  }
+  return regions;
+}
+
+export function getRegionPerimeter<T>(grid: Grid<T>, region: Coord[]): number {
+  return region.reduce((acc, coord) => {
+    const adjacentCoords = getAdjacentCoords(grid, coord);
+    const count = adjacentCoords.filter((adjCoord) => 
+      region.some(({x, y}) => x === adjCoord.x && y === adjCoord.y)
+    ).length;
+    return acc + (4 - count);
+  }, 0);
+}
+
+export function getScaledRegionPerimeter<T>(grid: Grid<T>, region: Coord[]): number {
+
+  return region.reduce((acc, coord) => {
+    const adjacentCoords = getAdjacentCoords(grid, coord);
+    const count = adjacentCoords.filter((adjCoord) =>
+      region.some(({ x, y }) => x === adjCoord.x && y === adjCoord.y)
+    ).length;
+    return acc + (4 - count);
+  }, 0);
 }
