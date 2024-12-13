@@ -102,6 +102,15 @@ export function directionToModifier(direction: Direction): Coord {
          { x: -1, y: 0 };
 }
 
+export function applyDirectionToCoord(
+  coord: Coord,
+  direction: Direction
+): Coord {
+  const modifier = directionToModifier(direction);
+  return { x: coord.x + modifier.x, y: coord.y + modifier.y };
+}
+
+
 export function isAdjacent(coord1: Coord, coord2: Coord): boolean {
   return Math.abs(coord1.x - coord2.x) + Math.abs(coord1.y - coord2.y) === 1;
 }
@@ -164,13 +173,56 @@ export function getRegionPerimeter<T>(grid: Grid<T>, region: Coord[]): number {
   }, 0);
 }
 
-export function getScaledRegionPerimeter<T>(grid: Grid<T>, region: Coord[]): number {
-
+export function getRegionSides<T>(grid: Grid<T>, region: Coord[]): number {
+  // Track fences per direction so we can avoid counting if there's an adjacent
+  // one already in the same direction
+  const fenceGrid: Grid<Direction[]> = grid.map((row) => row.map(() => []));
   return region.reduce((acc, coord) => {
     const adjacentCoords = getAdjacentCoords(grid, coord);
-    const count = adjacentCoords.filter((adjCoord) =>
+    const adjacentCoordsInRegion = adjacentCoords.filter((adjCoord) =>
       region.some(({ x, y }) => x === adjCoord.x && y === adjCoord.y)
-    ).length;
-    return acc + (4 - count);
+    );
+
+    const directionsOfAdjCoords = adjacentCoordsInRegion.map((adjCoord) =>
+      directionFromCoord(coord, adjCoord)
+    );
+
+    const fenceDirections = [
+      Direction.Up,
+      Direction.Right,
+      Direction.Down,
+      Direction.Left,
+      // Fences are in directions without adjacent coords
+    ].filter((direction) => !directionsOfAdjCoords.includes(direction));
+
+    // For a fence in the Up direction, we need to check coords Left and Right (etc)
+    // to determine whether it has already been counted
+    const directionsToCheck: Map<Direction, Direction[]> = new Map([
+      [Direction.Up, [Direction.Left, Direction.Right]],
+      [Direction.Right, [Direction.Up, Direction.Down]],
+      [Direction.Down, [Direction.Left, Direction.Right]],
+      [Direction.Left, [Direction.Up, Direction.Down]],
+    ]);
+
+    fenceGrid[coord.y][coord.x] = fenceDirections;
+
+    const fencesThatCount = fenceDirections.filter((direction) => {
+      const coordsToCheck = (directionsToCheck.get(direction) || []).map((direction) =>
+        applyDirectionToCoord(coord, direction)
+      ).filter((c) => inBounds(c.x, c.y, grid[0].length, grid.length));
+
+      // Counts if no nearby fence exists in the same direction as this one
+      return coordsToCheck.every(
+        (c) => !fenceGrid[c.y][c.x].includes(direction)
+      );
+    });
+    return acc +fencesThatCount.length;
   }, 0);
+}
+
+export function directionFromCoord(coord1: Coord, coord2: Coord): Direction {
+  return coord1.x < coord2.x ? Direction.Right :
+         coord1.x > coord2.x ? Direction.Left :
+         coord1.y < coord2.y ? Direction.Down :
+         Direction.Up;
 }
