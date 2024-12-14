@@ -1,11 +1,13 @@
-import { loadFromFile, product, range, sum } from "./lib.ts";
+import { time } from "node:console";
+import { deepCopy, loadFromFile, product, range, sum } from "./lib.ts";
 import { Coord, Grid } from "./lib/Coord.ts";
 
 async function main() {
   const lines = await loadFromFile("./14-input.txt");
   const robots = parseRobots(lines);
-
+  const partTwoRobots = deepCopy(robots);
   console.log(`Part 1: ${partOne(robots)}`);
+  console.log(`Part 2: ${partTwo(partTwoRobots)}`);
 }
 
 function partOne(robots: Robot[]): number {
@@ -23,6 +25,27 @@ function partOne(robots: Robot[]): number {
   return product(robotsPerQuadrant(grid));
 }
 
+function partTwo(robots: Robot[]): number {
+  const gridX = 101;
+  const gridY = 103;
+  const grid: Grid<number> = range(0, gridY).map((_y) =>
+    range(0, gridX).map((_x) => 0)
+  );
+  robots.forEach((robot) => {
+    const { x, y } = robot.position;
+    grid[y][x] += 1;
+  });
+
+  let longRunOfOnes = false, turns = 0;
+  while (!longRunOfOnes) {
+    turns++;
+    moveRobots(robots, grid, 1);
+    longRunOfOnes = grid.some((row) => row.join("").includes("1111111111111"));
+  }
+  printGrid(grid);
+  return turns;
+}
+
 function moveRobots(robots: Robot[], grid: Grid<number>, turns: number): void {
   const gridX = grid[0].length;
   const gridY = grid.length;
@@ -36,6 +59,7 @@ function moveRobots(robots: Robot[], grid: Grid<number>, turns: number): void {
     newY = newY < 0 ? gridY + newY : newY;
     grid[y][x] -= 1;
     grid[newY][newX] += 1;
+    robot.position = { x: newX, y: newY };
   }
 }
 
@@ -52,12 +76,11 @@ function robotsPerQuadrant(grid: Grid<number>): number[] {
   ];
   return quadrants.map(([x1, y1, x2, y2]) =>
     sum(grid.slice(y1, y2).map((row) => sum(row.slice(x1, x2))))
-);
+  );
 }
 
 function printGrid(grid: Grid<number>): void {
   console.log(grid.map((row) => row.join("")).join("\n"));
-  console.log("");
 }
 
 function parseRobots(lines: string[]): Robot[] {
