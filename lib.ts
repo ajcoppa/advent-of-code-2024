@@ -41,6 +41,10 @@ export function repeat<A>(x: A, n: number): A[] {
   return xs;
 }
 
+export function range(start: number, end: number): number[] {
+  return Array.from({ length: end - start }, (_, i) => start + i);
+}
+
 export function charIsNumeric(c: string) {
   const zero = "0".charCodeAt(0);
   const nine = "9".charCodeAt(0);
