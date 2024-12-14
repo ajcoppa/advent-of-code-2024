@@ -7,24 +7,45 @@ async function main() {
   const machineStrings = text.split("\n\n");
   const machines = machineStrings.map(parseMachine);
   console.log(`Part 1: ${partOne(machines)}`);
+  console.log(`Part 2: ${partTwo(machines)}`);
 }
 
 function partOne(machines: Machine[]): number {
-  return sum(machines.map((machine) => {
-    const {aPresses, bPresses} = cramersRule(
-      machine.buttons[0].x,
-      machine.buttons[0].y,
-      machine.buttons[1].x,
-      machine.buttons[1].y,
-      machine.prizeCoord.x,
-      machine.prizeCoord.y,
-    );
+  return go(machines);
+}
 
-    // Non-integer number of presses isn't valid here
-    if (Math.floor(aPresses) !== aPresses || Math.floor(bPresses) !== bPresses) {
-      return 0;
-    }
-    return machine.buttons[0].cost * aPresses + machine.buttons[1].cost * bPresses;
+function partTwo(machines: Machine[]): number {
+  return go(machines.map((machine) => ({
+    ...machine,
+    prizeCoord: {
+      x: machine.prizeCoord.x + 10000000000000,
+      y: machine.prizeCoord.y + 10000000000000,
+    },
+  })));
+}
+
+function go(machines: Machine[]): number {
+  return sum(
+    machines.map((machine) => {
+      const { aPresses, bPresses } = cramersRule(
+        machine.buttons[0].x,
+        machine.buttons[0].y,
+        machine.buttons[1].x,
+        machine.buttons[1].y,
+        machine.prizeCoord.x,
+        machine.prizeCoord.y
+      );
+      // If a non-integer number of presses were required, there isn't a valid solution
+      if (
+        Math.floor(aPresses) !== aPresses ||
+        Math.floor(bPresses) !== bPresses
+      ) {
+        return 0;
+      }
+      return (
+        machine.buttons[0].cost * aPresses +
+        machine.buttons[1].cost * bPresses
+      );
   }));
 }
 
