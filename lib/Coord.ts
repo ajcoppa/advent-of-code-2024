@@ -1,5 +1,3 @@
-import { any } from "../lib.ts";
-
 export type Coord = {
   x: number;
   y: number;
